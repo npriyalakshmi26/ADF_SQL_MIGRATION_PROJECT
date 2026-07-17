@@ -682,8 +682,9 @@
 					"recurrence": {
 						"frequency": "Month",
 						"interval": 1,
-						"startTime": "2026-07-17T17:54:00",
-						"timeZone": "India Standard Time"
+						"startTime": "2026-07-17T17:57:00",
+						"timeZone": "India Standard Time",
+						"schedule": {}
 					}
 				}
 			},
