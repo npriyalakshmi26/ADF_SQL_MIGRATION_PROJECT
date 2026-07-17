@@ -1,0 +1,15 @@
+{
+	"name": "ADF-SQL-Migration-001",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1b411ead-966b-4347-a2ba-e38e0a832854",
+		"tenantId": "d7807cb7-ae0d-4333-b446-f31f50eaaa2d"
+	}
+}

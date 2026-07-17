@@ -1,0 +1,28 @@
+{
+	"name": "LS_SQL_SP_WATERMARK_UDPATE",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "localhost\\MSSQLSERVER01",
+			"database": "RetailDW_Dev",
+			"encrypt": "optional",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "PriyAcer",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault_SQLMigration",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "Password"
+			}
+		},
+		"connectVia": {
+			"referenceName": "SelfHostedIntegrationRuntime1",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
