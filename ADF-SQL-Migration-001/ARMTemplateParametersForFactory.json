@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADF-SQL-Migration-001"
+		},
+		"LS_SQL_ADLS_PARQUET_accountKey": {
+			"value": ""
+		},
+		"AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl": {
+			"value": "https://KeyVaultSQLMigration.vault.azure.net/"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_server": {
+			"value": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_database": {
+			"value": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_userName": {
+			"value": "PriyAcer"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server": {
+			"value": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database": {
+			"value": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName": {
+			"value": "PriyAcer"
+		},
+		"LS_SQL_ADLS_PARQUET_properties_typeProperties_url": {
+			"value": "https://adlsgen2sqlmigration.dfs.core.windows.net/"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server": {
+			"value": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database": {
+			"value": "RetailDW_Dev"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName": {
+			"value": "PriyAcer"
+		},
+		"SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+			"value": "/subscriptions/06be168a-73d4-467b-8907-fafa5592ee64/resourcegroups/rg_demo1/providers/Microsoft.DataFactory/factories/adf-first-demo154/integrationruntimes/SelfHostedintegrationRuntime"
+		}
+	}
+}

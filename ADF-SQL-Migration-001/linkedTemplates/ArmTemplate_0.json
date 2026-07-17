@@ -1,0 +1,710 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-SQL-Migration-001"
+		},
+		"LS_SQL_ADLS_PARQUET_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_SQL_ADLS_PARQUET'"
+		},
+		"AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://KeyVaultSQLMigration.vault.azure.net/"
+		},
+		"LS_SQL_ADLS_PARQUET_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adlsgen2sqlmigration.dfs.core.windows.net/"
+		},
+		"SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+			"type": "string",
+			"defaultValue": "/subscriptions/06be168a-73d4-467b-8907-fafa5592ee64/resourcegroups/rg_demo1/providers/Microsoft.DataFactory/factories/adf-first-demo154/integrationruntimes/SelfHostedintegrationRuntime"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault_SQLMigration')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SQL_ADLS_PARQUET')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_SQL_ADLS_PARQUET_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('LS_SQL_ADLS_PARQUET_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SelfHostedIntegrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {
+					"linkedInfo": {
+						"resourceId": "[parameters('SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]",
+						"authorizationType": "Rbac"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_ADLS_PARQUET')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_ADLS_PARQUET",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@concat(dataset().TableName,'_',formatDateTime(utcNow(),'yyyyMMddHHmmss'),'.parquet')",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@concat(dataset().TableName,'/',formatDateTime(utcNow(),'yyyy/MM/dd'))",
+							"type": "Expression"
+						},
+						"fileSystem": "retaildw"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_ADLS_PARQUET')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SQLSERVER_LKUP')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_server')]",
+					"database": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_database')]",
+					"encrypt": "optional",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_SQLMigration",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "Password"
+					}
+				},
+				"connectVia": {
+					"referenceName": "SelfHostedIntegrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SelfHostedIntegrationRuntime1')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_SQLMigration')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SQLSERVER_LKUP_MAXVALUE')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server')]",
+					"database": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database')]",
+					"encrypt": "optional",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_SQLMigration",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "Password"
+					}
+				},
+				"connectVia": {
+					"referenceName": "SelfHostedIntegrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SelfHostedIntegrationRuntime1')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_SQLMigration')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SQL_SP_WATERMARK_UDPATE')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server')]",
+					"database": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database')]",
+					"encrypt": "optional",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault_SQLMigration",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "Password"
+					}
+				},
+				"connectVia": {
+					"referenceName": "SelfHostedIntegrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SelfHostedIntegrationRuntime1')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault_SQLMigration')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ChildPipeline_StoredProcedure')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SP_UPDATE_WATERMARK",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[UpdateWatermark]",
+							"storedProcedureParameters": {
+								"TableName": {
+									"value": {
+										"value": "@pipeline().parameters.TableName",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"TableSchema": {
+									"value": {
+										"value": "@pipeline().parameters.TableSchema",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"WatermarkColumn": {
+									"value": {
+										"value": "@pipeline().parameters.WatermarkColumn",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_SQL_SP_WATERMARK_UDPATE",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"TableSchema": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					},
+					"WatermarkColumn": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-12T11:31:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQL_SP_WATERMARK_UDPATE')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQLSERVER_LKUP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSERVER_LKUP",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQLSERVER_LKUP')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQLSERVER_LKUP_MAXVALUE')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSERVER_LKUP_MAXVALUE",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"SchemaName": {
+						"type": "string"
+					},
+					"TableName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().SchemaName",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().TableName",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SQLSERVER_LKUP_MAXVALUE')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ChildPipeline_Incremental')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKUP_MAX_VALUE",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT MAX(@{pipeline().parameters.WatermarkCoulumn}) AS MaxValue\nFROM @{pipeline().parameters.TableSchema}.@{pipeline().parameters.TableName}\n",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_SQLSERVER_LKUP_MAXVALUE",
+								"type": "DatasetReference",
+								"parameters": {
+									"SchemaName": {
+										"value": "@pipeline().parameters.TableSchema",
+										"type": "Expression"
+									},
+									"TableName": {
+										"value": "@pipeline().parameters.TableName",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					},
+					{
+						"name": "IF_NEW_RECORD_EXISTS",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "LKUP_MAX_VALUE",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@or(equals(pipeline().parameters.LastLoadValue, null), greater(int(activity('LKUP_MAX_VALUE').output.firstRow.MaxValue), int(pipeline().parameters.LastLoadValue)))",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "CPY_SQL_FULLINCRMNTL_LOAD_TABLES",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "@concat(\n    'SELECT * FROM ',\n    pipeline().parameters.TableSchema, '.', pipeline().parameters.TableName,\n    if(\n        equals(pipeline().parameters.LastLoadValue, null),\n        '', \n        concat(\n            ' WHERE ', pipeline().parameters.WatermarkCoulumn,\n            ' > ''', pipeline().parameters.LastLoadValue, ''''\n        )\n    )\n)",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "DS_SQLSERVER_LKUP_MAXVALUE",
+											"type": "DatasetReference",
+											"parameters": {
+												"SchemaName": {
+													"value": "@pipeline().parameters.TableSchema",
+													"type": "Expression"
+												},
+												"TableName": {
+													"value": "@pipeline().parameters.TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "DS_SQL_ADLS_PARQUET",
+											"type": "DatasetReference",
+											"parameters": {
+												"TableName": {
+													"value": "@pipeline().parameters.TableName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "EXEC_UPDATE_WATERMARKCOLUMN",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "CPY_SQL_FULLINCRMNTL_LOAD_TABLES",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "PL_ChildPipeline_StoredProcedure",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"TableSchema": {
+												"value": "@pipeline().parameters.TableSchema",
+												"type": "Expression"
+											},
+											"TableName": {
+												"value": "@pipeline().parameters.TableName",
+												"type": "Expression"
+											},
+											"WatermarkColumn": {
+												"value": "@pipeline().parameters.WatermarkCoulumn",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"TableSchema": {
+						"type": "string",
+						"defaultValue": "@item().TableSchema"
+					},
+					"TableName": {
+						"type": "string",
+						"defaultValue": "@item().TableName"
+					},
+					"WatermarkCoulumn": {
+						"type": "string",
+						"defaultValue": "@item().WatermarkColumn"
+					},
+					"LastLoadValue": {
+						"type": "string",
+						"defaultValue": "@item().LastLoadValue"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-12T11:31:49Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_SQLSERVER_LKUP_MAXVALUE')]",
+				"[concat(variables('factoryId'), '/datasets/DS_SQL_ADLS_PARQUET')]",
+				"[concat(variables('factoryId'), '/pipelines/PL_ChildPipeline_StoredProcedure')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_ParentPipeline_Orchestration')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LKUP_SQL_WATERMARK",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"sqlReaderQuery": {
+									"value": "SELECT TableSchema, TableName, WatermarkColumn, LastLoadValue FROM dbo.ADF_Watermark_Table;",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_SQLSERVER_LKUP",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "LKUP_ForEach",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "LKUP_SQL_WATERMARK",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('LKUP_SQL_WATERMARK').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "EXEC_SQL_INCREMENTAL",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "PL_ChildPipeline_Incremental",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"TableSchema": {
+												"value": "@item().TableSchema",
+												"type": "Expression"
+											},
+											"TableName": {
+												"value": "@item().TableName",
+												"type": "Expression"
+											},
+											"WatermarkCoulumn": {
+												"value": "@item().WatermarkColumn",
+												"type": "Expression"
+											},
+											"LastLoadValue": {
+												"value": "@item().LastLoadValue",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-17T11:46:11Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_SQLSERVER_LKUP')]",
+				"[concat(variables('factoryId'), '/pipelines/PL_ChildPipeline_Incremental')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ScheduledTrigger01')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_ParentPipeline_Orchestration",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Month",
+						"interval": 1,
+						"startTime": "2026-07-17T17:54:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_ParentPipeline_Orchestration')]"
+			]
+		}
+	]
+}

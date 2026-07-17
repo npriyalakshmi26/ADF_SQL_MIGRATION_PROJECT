@@ -1,0 +1,133 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "ADF-SQL-Migration-001"
+		},
+		"LS_SQL_ADLS_PARQUET_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_SQL_ADLS_PARQUET'"
+		},
+		"AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://KeyVaultSQLMigration.vault.azure.net/"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		},
+		"LS_SQL_ADLS_PARQUET_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adlsgen2sqlmigration.dfs.core.windows.net/"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "localhost\\MSSQLSERVER01"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "RetailDW_Dev"
+		},
+		"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "PriyAcer"
+		},
+		"SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+			"type": "string",
+			"defaultValue": "/subscriptions/06be168a-73d4-467b-8907-fafa5592ee64/resourcegroups/rg_demo1/providers/Microsoft.DataFactory/factories/adf-first-demo154/integrationruntimes/SelfHostedintegrationRuntime"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "ADF-SQL-Migration-001_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_SQL_ADLS_PARQUET_accountKey": {
+						"value": "[parameters('LS_SQL_ADLS_PARQUET_accountKey')]"
+					},
+					"AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_SQLMigration_properties_typeProperties_baseUrl')]"
+					},
+					"LS_SQL_ADLS_PARQUET_properties_typeProperties_url": {
+						"value": "[parameters('LS_SQL_ADLS_PARQUET_properties_typeProperties_url')]"
+					},
+					"SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+						"value": "[parameters('SelfHostedIntegrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]"
+					},
+					"LS_SQLSERVER_LKUP_properties_typeProperties_server": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_server')]"
+					},
+					"LS_SQLSERVER_LKUP_properties_typeProperties_database": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_database')]"
+					},
+					"LS_SQLSERVER_LKUP_properties_typeProperties_userName": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_properties_typeProperties_userName')]"
+					},
+					"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_server')]"
+					},
+					"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_database')]"
+					},
+					"LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName": {
+						"value": "[parameters('LS_SQLSERVER_LKUP_MAXVALUE_properties_typeProperties_userName')]"
+					},
+					"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server": {
+						"value": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_server')]"
+					},
+					"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database": {
+						"value": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_database')]"
+					},
+					"LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName": {
+						"value": "[parameters('LS_SQL_SP_WATERMARK_UDPATE_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
