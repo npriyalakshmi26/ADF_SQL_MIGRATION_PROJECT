@@ -697,7 +697,7 @@
 					"recurrence": {
 						"frequency": "Month",
 						"interval": 1,
-						"startTime": "2026-07-17T17:57:00",
+						"startTime": "2026-07-17T18:00:00",
 						"timeZone": "India Standard Time",
 						"schedule": {}
 					}
